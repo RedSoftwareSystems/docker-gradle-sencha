@@ -3,11 +3,7 @@ from openjdk:8-jdk
 
 LABEL maintainer "Luca Botti <lbotti@red.software.systems>"
 
-
-ENV VERSION=6.7.0.37
-
-
-
+ENV SENCHA_CMD_VERSION=6.7.0.37
 
 ENV GRADLE_HOME /opt/gradle
 ENV GRADLE_VERSION 5.2.1
@@ -27,33 +23,26 @@ RUN set -o errexit -o nounset \
     && ln --symbolic "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle \
     \
     && echo "Adding gradle user and group" \
-    && groupadd --system --gid 1000 gradle \
-    && useradd --system --gid gradle --uid 1000 --shell /bin/bash --create-home gradle \
-    && mkdir /home/gradle/.gradle \
-    && chown --recursive gradle:gradle /home/gradle \
+
     \
     && echo "Symlinking root Gradle cache to gradle Gradle cache" \
-    && ln -s /home/gradle/.gradle /root/.gradle
+    && mkdir /project
 
 
 
-RUN curl -o /cmd.run.zip http://cdn.sencha.com/cmd/$VERSION/no-jre/SenchaCmd-$VERSION-linux-amd64.sh.zip && \
+
+RUN curl -o /cmd.run.zip http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION/no-jre/SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip && \
     unzip -p /cmd.run.zip > /cmd-install.run && \
     chmod +x /cmd-install.run && \
-    /cmd-install.run -q -dir /opt/Sencha/Cmd/$VERSION &&\
+    /cmd-install.run -q -dir /opt/Sencha/Cmd/$SENCHA_CMD_VERSION &&\
     rm /cmd-install.run /cmd.run.zip &&\
-    ln -s /opt/Sencha/Cmd/$VERSION/sencha /opt/Sencha/sencha && \
-    ln -s /opt/Sencha/Cmd/$VERSION/sencha /usr/local/bin/sencha && \
+    ln -s /opt/Sencha/Cmd/$SENCHA_CMD_VERSION/sencha /opt/Sencha/sencha && \
+    ln -s /opt/Sencha/Cmd/$SENCHA_CMD_VERSION/sencha /usr/local/bin/sencha && \
     apt-get update && apt-get upgrade -y
 
-#    install -dm777 -o root -g root /opt/Sencha/Cmd/repo && \
-ENV PATH "$PATH:/opt/Sencha/sencha"
-
-
 # Create Gradle volume
-USER gradle
-VOLUME "/home/gradle/.gradle"
-WORKDIR /home/gradle
+
+WORKDIR /project
 
 RUN set -o errexit -o nounset \
     && echo "Testing Gradle installation" \
