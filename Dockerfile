@@ -43,12 +43,13 @@ RUN curl -o /cmd.run.zip http://cdn.sencha.com/cmd/$VERSION/no-jre/SenchaCmd-$VE
     /cmd-install.run -q -dir /opt/Sencha/Cmd/$VERSION &&\
     rm /cmd-install.run /cmd.run.zip &&\
     ln -s /opt/Sencha/Cmd/$VERSION/sencha /opt/Sencha/sencha && \
-    apt-get update && apt-get upgrade -y 
+    ln -s /opt/Sencha/Cmd/$VERSION/sencha /usr/local/bin/sencha && \
+    apt-get update && apt-get upgrade -y
 
 #    install -dm777 -o root -g root /opt/Sencha/Cmd/repo && \
- 
- 
- 
+ENV PATH "$PATH:/opt/Sencha/sencha"
+
+
 # Create Gradle volume
 USER gradle
 VOLUME "/home/gradle/.gradle"
@@ -56,7 +57,7 @@ WORKDIR /home/gradle
 
 RUN set -o errexit -o nounset \
     && echo "Testing Gradle installation" \
-    && gradle --version    
+    && gradle --version
 
 #ENTRYPOINT ["/opt/Sencha/sencha"]
 
